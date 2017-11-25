@@ -24,8 +24,6 @@
 # WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 FROM ubuntu:17.04
 
-MAINTAINER Rhommel Lamas <roml@rhommell.com>
-
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
@@ -49,7 +47,7 @@ RUN easy_install pip \
 
 RUN mkdir /app
 
-ARG VERSION
+ARG VERSION=master
 
 RUN cd /app \
     && git clone -b ${VERSION} https://github.com/statsite/statsite.git \
@@ -57,20 +55,22 @@ RUN cd /app \
     && ./autogen.sh \
     && ./configure \
     && make \
-    && make install \
-    && mv statsite /bin/ \
-    && mv sinks /bin/sinks \
-    && chmod +x /bin/sinks/* /bin/statsite
+    && make install
 
 FROM ubuntu:17.04
 
+LABEL maintainer="roml@rhommell.com"
+
 RUN cd /bin
 
-COPY --from=0 /bin/statsite statsite
-COPY --from=0 /bin/sinks sinks
+COPY --from=0 /app/statsite/statsite /bin/statsite
+COPY --from=0 /app/statsite/sinks /bin/sinks
+
+RUN chmod +x /bin/statsite \
+    && chmod +x /bin/sinks/*
 
 VOLUME ["/etc/statsite"]
 
-EXPOSE 8125
+EXPOSE 8125/tcp 8125/udp
 
 CMD ["/bin/statsite", "-f", "/etc/statsite/statsite.conf"]
