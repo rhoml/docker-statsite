@@ -62,10 +62,6 @@ RUN cd /app \
     && mv sinks /bin/sinks \
     && chmod +x /bin/sinks/* /bin/statsite
 
-RUN apt-get -y autoremove \
-    && apt-get clean all \
-    && rm -rf /var/lib/apt/lists/*
-
 FROM ubuntu:17.04
 
 RUN cd /bin
